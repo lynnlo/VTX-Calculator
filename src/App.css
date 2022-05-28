@@ -1,38 +1,82 @@
 .App {
-  text-align: center;
+  background-color: #333;
+
+  margin: 0;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.container {
   display: flex;
+
+  width: 100vw;
+  height: 100vh;
+  
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.commandContainer {
+  display: flex;
+
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: #0006 4px 4px 12px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.command {
+  display: flex;
+  
+  flex-direction: row;
+
+  background-color: #2222;
+
+  width: 60vw;
+  height: 8vh;
+}
+
+.command .commandType {
+  display: flex;
+
+  flex: 0.1;
+  align-items: center;
+  justify-content: center;
+
+  background-color: #4442;
+  color: #fffa;
+  
+  font-size: 2rem;
+  font-family: monospace;
+  text-align: center;
+}
+
+.command .commandInput {
+  flex: 0.6;
+
+  background-color: transparent;
+  color: #fffa;
+  
+  font-size: 2.5rem;
+  font-family: monospace;
+  text-align: left;
+  letter-spacing: 0.5ch;
+
+  outline: none;
+  border: none;
+  padding: 0 0.5em;
+}
+
+.command .commandOutput {
+  display: flex;
+
+  flex: 0.3;
+  align-items: center;
+  justify-content: center;
+
+  background-color: transparent;
+  color: #fffa;
+
+  font-size: 2.5rem;
+  font-family: monospace;
 }

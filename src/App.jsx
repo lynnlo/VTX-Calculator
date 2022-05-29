@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { parser } from 'mathjs';
+import { useSpring, animated } from 'react-spring';
 import './App.css';
 
 function App() {
+  // #region VTX Engine
   const [commands, setCommands] = useState([{
     command: '',
     cacheOutput: '',
@@ -24,36 +26,45 @@ function App() {
     let newCommands = [...commands];
     newCommands[selector]['command'] = e.target.value;
 
-    // Evaluate the command
-    try {
-      newCommands[selector]['cacheOutput'] = environment.evaluate(e.target.value);
-    } catch (error) {
-      newCommands[selector]['cacheOutput'] = e.target.value;
-    }
-    
-    // Format the output
-    switch (typeof(newCommands[selector]['cacheOutput'])) {
-      case 'function':
-        newCommands[selector]['cacheOutput'] = 'Function';
-        break;
-      case 'number':
-        newCommands[selector]['cacheOutput'] = newCommands[selector]['cacheOutput'].toString();
-        break;
-      case 'string':
-        newCommands[selector]['cacheOutput'] = `'${newCommands[selector]['cacheOutput']}'`;
-        break;
-      default:
-        newCommands[selector]['cacheOutput'] = 'undefined';
-    }
-    
-    if (newCommands[selector]['cacheOutput'].length > 20) {
-      newCommands[selector]['cacheOutput'] = "Oversize";
-    }
-    else if (newCommands[selector]['cacheOutput'].length > 10) {
-      newCommands[selector]['cacheOutput'] = newCommands[selector]['cacheOutput'].slice(0, 10) + '...';
-    }
-    else if (newCommands[selector]['cacheOutput'].length === 0) {
-      newCommands[selector]['cacheOutput'] = '';
+    // Evaluates command chain
+    environment.clear();
+    for (let newCommand in newCommands) {
+      // Evaluate the command
+      switch (newCommands[newCommand]['command']) {
+        case 'clear':
+          environment.clear();
+          newCommands[newCommand]['cacheOutput'] = newCommands[newCommand]['command'];
+          break;
+        default:
+          try {
+            newCommands[newCommand]['cacheOutput'] = environment.evaluate(newCommands[newCommand]['command']);
+          } catch (error) {
+            newCommands[newCommand]['cacheOutput'] = newCommands[newCommand]['command'];
+          }
+          break;
+      }
+      
+      // Format the output
+      switch (typeof(newCommands[newCommand]['cacheOutput'])) {
+        case 'function':
+          newCommands[newCommand]['cacheOutput'] = 'Function';
+          break;
+        case 'number':
+          newCommands[newCommand]['cacheOutput'] = newCommands[newCommand]['cacheOutput'].toString();
+          break;
+        case 'string':
+          newCommands[newCommand]['cacheOutput'] = `${newCommands[newCommand]['cacheOutput']}`;
+          break;
+        default:
+          newCommands[newCommand]['cacheOutput'] = '';
+      }
+      
+      if (newCommands[newCommand]['cacheOutput'].length > 10) {
+        newCommands[newCommand]['cacheOutput'] = newCommands[newCommand]['cacheOutput'].slice(0, 10) + '...';
+      }
+      else if (newCommands[newCommand]['cacheOutput'].length === 0) {
+        newCommands[newCommand]['cacheOutput'] = '';
+      }
     }
     setCommands(newCommands);
   }
@@ -91,7 +102,16 @@ function App() {
     }
   }
 
-  // Updates selector position 
+  // #endregion
+  
+  // #region React Spring
+  const [commandContainerStyles, setCommandContainerStyles] = useSpring(() => ({
+    height: `${commands.length * 8}vh`,
+  }));
+
+  // #endregion
+
+  // Updates on command changes
   useEffect(() => {
     if (commands.length > lastCommandsLength) {
       focusCommand(selector + 1);
@@ -100,24 +120,32 @@ function App() {
       focusCommand(selector - 1);
     }
     setLastCommandsLength(commands.length);
+    setCommandContainerStyles({
+      height: `${commands.length * 8}vh`,
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [commands.length]);
 
-  useEffect(() => {
-  }, []);
-  
   return (
     <div className="App">
       <div className="container">
-        <div className="commandContainer">
+        <animated.div className="commandContainer" style={commandContainerStyles}>
           {commands.map((command, index) => (
             <div className="command" key={index} ref={command.ref}>
               <div className="commandType"> TX1 </div>
-              <input className="commandInput" onKeyDown={parseKey} onFocus={() => {setSelector(index)}} value={command.command} onChange={modifyCommand} />
-              <div className="commandOutput"> {command.cacheOutput} </div>
+              <input
+                className="commandInput"
+                onKeyDown={parseKey}
+                onFocus={() => {setSelector(index)}}
+                value={command.command}
+                onChange={modifyCommand}
+              />
+              <div className="commandOutput"> 
+                {command.cacheOutput}
+              </div>
             </div>
           ))}
-        </div>
+        </animated.div>
       </div>
     </div>
   );

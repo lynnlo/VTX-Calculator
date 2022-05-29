@@ -20,7 +20,7 @@
 
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 
   box-shadow: #0006 4px 4px 12px;
 }
@@ -49,6 +49,14 @@
   font-size: 2rem;
   font-family: monospace;
   text-align: center;
+
+  cursor: default;
+
+  transition: all 0.2s ease-in-out;
+}
+
+.command .commandType:hover {
+  background-color: #2222;
 }
 
 .command .commandInput {
@@ -79,4 +87,16 @@
 
   font-size: 2.5rem;
   font-family: monospace;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease-in-out;
+}
+
+.command .commandOutput:hover {
+  background-color: #4442;
+}
+
+.command .commandOutput:active {
+  background-color: #2222;
 }

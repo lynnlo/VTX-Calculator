@@ -32,14 +32,13 @@
 
   background-color: #2222;
 
-  width: 60vw;
   height: 8vh;
 }
 
 .command .commandType {
   display: flex;
 
-  flex: 0.1;
+  flex: 1 1 0.5;
   align-items: center;
   justify-content: center;
 
@@ -50,7 +49,11 @@
   font-family: monospace;
   text-align: center;
 
-  cursor: default;
+  padding: 1em;
+
+  user-select: none;
+
+  cursor: pointer;
 
   transition: all 0.2s ease-in-out;
 }
@@ -60,7 +63,7 @@
 }
 
 .command .commandInput {
-  flex: 0.6;
+  flex: 1 1 auto;
 
   background-color: transparent;
   color: #fffa;
@@ -68,17 +71,35 @@
   font-size: 2.5rem;
   font-family: monospace;
   text-align: left;
-  letter-spacing: 0.5ch;
+  letter-spacing: 0.2ch;
 
   outline: none;
   border: none;
   padding: 0 0.5em;
 }
 
+.command .commandInputSuggestion {
+  display: flex;
+
+  flex: 1 1 0.5;
+  align-items: center;
+  justify-content: flex-start;
+
+  background-color: transparent;
+  color: #fff6;
+  
+  font-size: 2.5rem;
+  font-family: monospace;
+  text-align: left;
+  letter-spacing: 0.2ch;
+
+  user-select: none;
+}
+
 .command .commandOutput {
   display: flex;
 
-  flex: 0.3;
+  flex: 1 1 auto;
   align-items: center;
   justify-content: center;
 
@@ -88,7 +109,9 @@
   font-size: 2.5rem;
   font-family: monospace;
 
-  cursor: pointer;
+  max-lines: 1;
+
+  cursor: text;
 
   transition: all 0.2s ease-in-out;
 }

@@ -2,17 +2,33 @@ import React, { useEffect, useState } from 'react';
 import { parser } from 'mathjs';
 import { useSpring, animated } from 'react-spring';
 import './App.css';
+import './builtins.js'
+import { formatOutput, evaluateCommand } from './vt1.js';
 
 function App() {
   // #region VTX Engine
   const [commands, setCommands] = useState([{
     command: '',
     cacheOutput: '',
+    suggestions: [],
+    type: 'vt1',
     ref: React.createRef()
   }]);
+  const [settings, setSettings] = useState({
+    fontSize: '1.5em',
+    width: '60vw'
+  });
   const [lastCommandsLength, setLastCommandsLength] = useState(1);
   const [selector, setSelector] = useState(0);
   const [environment] = useState(new parser());
+
+  // Utility function, loads builtins
+  let loadBuiltins = () => {
+    for (let builtin in require('./builtins.js')) {
+      environment.set(builtin, require('./builtins.js')[builtin]);
+      //console.log(environment.get(builtin));
+    }
+  }
 
   // Utility function, focuses a command
   let focusCommand = (index) => {
@@ -28,42 +44,33 @@ function App() {
 
     // Evaluates command chain
     environment.clear();
+    loadBuiltins();
     for (let newCommand in newCommands) {
-      // Evaluate the command
-      switch (newCommands[newCommand]['command']) {
-        case 'clear':
-          environment.clear();
-          newCommands[newCommand]['cacheOutput'] = newCommands[newCommand]['command'];
-          break;
-        default:
-          try {
-            newCommands[newCommand]['cacheOutput'] = environment.evaluate(newCommands[newCommand]['command']);
-          } catch (error) {
-            newCommands[newCommand]['cacheOutput'] = newCommands[newCommand]['command'];
+      switch(newCommands[newCommand]['type']) {
+        case 'vt1':
+          newCommands = evaluateCommand(newCommands, newCommand, environment);
+          newCommands = formatOutput(newCommands, newCommand);
+
+          if (environment.get('width') === "small") {
+            let newSettings = {...settings};
+            newSettings['width'] = "40vw";
+            setSettings(newSettings);
+          }
+          else if (environment.get('width') === "large") {
+            let newSettings = {...settings};
+            newSettings['width'] = "80vw";
+            setSettings(newSettings);
+          }
+          else {
+            let newSettings = {...settings};
+            newSettings['width'] = "60vw";
+            setSettings(newSettings);
           }
           break;
-      }
-      
-      // Format the output
-      switch (typeof(newCommands[newCommand]['cacheOutput'])) {
-        case 'function':
-          newCommands[newCommand]['cacheOutput'] = 'Function';
-          break;
-        case 'number':
-          newCommands[newCommand]['cacheOutput'] = newCommands[newCommand]['cacheOutput'].toString();
-          break;
-        case 'string':
-          newCommands[newCommand]['cacheOutput'] = `${newCommands[newCommand]['cacheOutput']}`;
+        case 'txt':
           break;
         default:
-          newCommands[newCommand]['cacheOutput'] = '';
-      }
-      
-      if (newCommands[newCommand]['cacheOutput'].length > 10) {
-        newCommands[newCommand]['cacheOutput'] = newCommands[newCommand]['cacheOutput'].slice(0, 10) + '...';
-      }
-      else if (newCommands[newCommand]['cacheOutput'].length === 0) {
-        newCommands[newCommand]['cacheOutput'] = '';
+          break;
       }
     }
     setCommands(newCommands);
@@ -71,11 +78,14 @@ function App() {
 
   // Handles keyboard inputs
   let parseKey = (e) => {
+    e.stopPropagation();
     switch (e.key) {
       case 'Enter':
         let newCommand = {
           command: '',
           cacheOutput: '',
+          suggestions: [],
+          type: 'vt1',
           ref: React.createRef()
         };
         setCommands([...commands, newCommand]);
@@ -86,20 +96,44 @@ function App() {
         }
         break;
       case 'ArrowUp':
+        e.preventDefault();
         if (selector > 0) {
           setSelector(selector - 1);
           focusCommand(selector - 1);
         }
         break;
       case 'ArrowDown':
+        e.preventDefault();
         if (selector < commands.length - 1) {
           setSelector(selector + 1);
           focusCommand(selector + 1);
         }
         break;
+      case 'Tab':
+        e.preventDefault();
+        if (commands[selector]['suggestions'].length > 0) {
+          let newCommands = [...commands];
+          let sliceLength = newCommands[selector]['command'].length - newCommands[selector]['suggestions'][0].length;
+          newCommands[selector]['command'] = newCommands[selector]['command'].slice(0, sliceLength);
+            newCommands[selector]['command'] += newCommands[selector]['suggestions'][1];
+            newCommands[selector]['suggestions'] = [];
+          setCommands(newCommands);
+        }
+        break;
       default:
         break;
     }
+  }
+
+  let handleTypeChange = (index) => {
+    let newCommands = [...commands];
+    if (newCommands[index]['type'] === 'vt1') {
+      newCommands[index]['type'] = 'txt';
+    }
+    else if (newCommands[index]['type'] === 'txt') {
+      newCommands[index]['type'] = 'vt1';
+    }
+    setCommands(newCommands);
   }
 
   // #endregion
@@ -131,17 +165,21 @@ function App() {
       <div className="container">
         <animated.div className="commandContainer" style={commandContainerStyles}>
           {commands.map((command, index) => (
-            <div className="command" key={index} ref={command.ref}>
-              <div className="commandType"> TX1 </div>
+            <div className="command" style={{width: settings.width, fontSize: settings.fontSize}} key={index} ref={command.ref}>
+              <div className="commandType" onClick={() => handleTypeChange(index)}> {command.type.toUpperCase()} </div>
               <input
                 className="commandInput"
                 onKeyDown={parseKey}
+                onKeyUp={e => e.stopPropagation()}
+                onKeyPress={e => e.stopPropagation()}
                 onFocus={() => {setSelector(index)}}
                 value={command.command}
                 onChange={modifyCommand}
+                spellCheck="false"
               />
+              <div className="commandInputSuggestion">{(command.command.length !== 0) && command.suggestions[1]}</div>
               <div className="commandOutput"> 
-                {command.cacheOutput}
+                {(command.type !== "txt") && command.cacheOutput}
               </div>
             </div>
           ))}

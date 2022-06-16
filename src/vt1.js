@@ -38,8 +38,10 @@ export const formatOutput = (newCommands, newCommand) => {
 export const evaluateCommand = (newCommands, newCommand, environment) => {
 	let list = environment.scope;
 	let suggestions = [];
-	let query = newCommands[newCommand]['command'].split(/\(|\+|-|\/|\*|\s/)[newCommands[newCommand]['command'].split(/\(|\+|-|\/|\*|\s/).length - 1];
-	list.forEach((_, x) => x.slice(0, query.length) === query ? suggestions.push(x) : null);
+	let query = newCommands[newCommand]['command'].split(/\(|\+|-|\/|\*|=|\s/)[newCommands[newCommand]['command'].split(/\(|\+|-|\/|\*|=|\s/).length - 1];
+	if (query.length > 0) {
+		list.forEach((_, x) => x.slice(0, query.length) === query ? suggestions.push(x) : null);
+	}
 	switch (newCommands[newCommand]['command']) {
 		case 'clear':
 			environment.clear();

@@ -1,5 +1,7 @@
 .App {
   background-color: #333;
+  background: url("background.png") no-repeat center center fixed;
+  background-size: cover;
 
   margin: 0;
 }
@@ -7,7 +9,6 @@
 .container {
   display: flex;
 
-  width: 100vw;
   height: 100vh;
   
   flex-direction: column;
@@ -22,7 +23,10 @@
   align-items: center;
   justify-content: flex-start;
 
-  box-shadow: #0006 4px 4px 12px;
+  background: linear-gradient(to right bottom, #222a, #aaa2);
+  backdrop-filter: blur(4px); 
+
+  box-shadow: #0008 4px 4px 12px;
 }
 
 .command {
@@ -30,8 +34,9 @@
   
   flex-direction: row;
 
-  background-color: #2222;
+  background: transparent;
 
+  width: 60vw;
   height: 8vh;
 }
 
@@ -63,43 +68,78 @@
 }
 
 .command .commandInput {
-  flex: 1 1 auto;
+  background-color: transparent;
+
+  width: 0;
+
+  outline: none;
+  border: none;
+}
+
+.command .commandDisplay {
+  display: flex;
+
+  flex: 1 1;
+  align-items: center;
+  justify-content:  flex-start;
 
   background-color: transparent;
   color: #fffa;
   
   font-size: 2.5rem;
   font-family: monospace;
-  text-align: left;
-  letter-spacing: 0.2ch;
+  letter-spacing: 0.1ch;
+  white-space: pre;
+  max-lines: 1;
 
   outline: none;
   border: none;
   padding: 0 0.5em;
+
+  cursor: text;
+
+  transition: all 0.2s ease-in-out;
 }
 
-.command .commandInputSuggestion {
-  display: flex;
+.command .commandDisplay .caret {
+  background-color: #fffa;
 
-  flex: 1 1 0.5;
-  align-items: center;
-  justify-content: flex-start;
+  width: 3px;
+  height: 50%;
 
-  background-color: transparent;
+  animation: blink 2s ease-in-out alternate infinite;
+}
+
+
+.command .commandDisplay .inactiveCaret {
+  background-color: #fffa;
+
+  width: 3px;
+  height: 50%;
+
+  opacity: 0.2;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.command .commandDisplay .suggestions {
   color: #fff6;
-  
-  font-size: 2.5rem;
-  font-family: monospace;
-  text-align: left;
-  letter-spacing: 0.2ch;
-
-  user-select: none;
 }
 
 .command .commandOutput {
   display: flex;
 
-  flex: 1 1 auto;
+  flex: 1 0;
   align-items: center;
   justify-content: center;
 

@@ -12,12 +12,9 @@ function App() {
     cacheOutput: '',
     suggestions: [],
     type: 'vt1',
-    ref: React.createRef()
+    ref: React.createRef(),
+    caret: 0
   }]);
-  const [settings, setSettings] = useState({
-    fontSize: '1.5em',
-    width: '60vw'
-  });
   const [lastCommandsLength, setLastCommandsLength] = useState(1);
   const [selector, setSelector] = useState(0);
   const [environment] = useState(new parser());
@@ -41,6 +38,7 @@ function App() {
   let modifyCommand = (e) => {
     let newCommands = [...commands];
     newCommands[selector]['command'] = e.target.value;
+    newCommands[selector]['caret'] = e.target.selectionStart;
 
     // Evaluates command chain
     environment.clear();
@@ -50,22 +48,6 @@ function App() {
         case 'vt1':
           newCommands = evaluateCommand(newCommands, newCommand, environment);
           newCommands = formatOutput(newCommands, newCommand);
-
-          if (environment.get('width') === "small") {
-            let newSettings = {...settings};
-            newSettings['width'] = "40vw";
-            setSettings(newSettings);
-          }
-          else if (environment.get('width') === "large") {
-            let newSettings = {...settings};
-            newSettings['width'] = "80vw";
-            setSettings(newSettings);
-          }
-          else {
-            let newSettings = {...settings};
-            newSettings['width'] = "60vw";
-            setSettings(newSettings);
-          }
           break;
         case 'txt':
           break;
@@ -86,7 +68,8 @@ function App() {
           cacheOutput: '',
           suggestions: [],
           type: 'vt1',
-          ref: React.createRef()
+          ref: React.createRef(),
+          caret: 0
         };
         setCommands([...commands, newCommand]);
         break;
@@ -111,7 +94,7 @@ function App() {
         break;
       case 'Tab':
         e.preventDefault();
-        if (commands[selector]['suggestions'].length > 0) {
+        if (commands[selector]['suggestions'].length > 1) {
           let newCommands = [...commands];
           let sliceLength = newCommands[selector]['command'].length - newCommands[selector]['suggestions'][0].length;
           newCommands[selector]['command'] = newCommands[selector]['command'].slice(0, sliceLength);
@@ -165,19 +148,26 @@ function App() {
       <div className="container">
         <animated.div className="commandContainer" style={commandContainerStyles}>
           {commands.map((command, index) => (
-            <div className="command" style={{width: settings.width, fontSize: settings.fontSize}} key={index} ref={command.ref}>
+            <div className="command" key={index} ref={command.ref}>
               <div className="commandType" onClick={() => handleTypeChange(index)}> {command.type.toUpperCase()} </div>
               <input
                 className="commandInput"
                 onKeyDown={parseKey}
-                onKeyUp={e => e.stopPropagation()}
+                onKeyUp={modifyCommand}
                 onKeyPress={e => e.stopPropagation()}
                 onFocus={() => {setSelector(index)}}
                 value={command.command}
                 onChange={modifyCommand}
                 spellCheck="false"
               />
-              <div className="commandInputSuggestion">{(command.command.length !== 0) && command.suggestions[1]}</div>
+              <div className="commandDisplay" onClick={e => e.target.previousSibling.focus()}>
+                {command.command.slice(0, command.caret)}
+                <span className={(selector === index) ? "caret" : "inactiveCaret"}></span>
+                {command.command.slice(command.caret)}
+                <span className="suggestions">
+                  {(command.command.length > 0 && command.suggestions.length > 1) ? command.suggestions[1].slice(command.suggestions[0].length) : ''}
+                </span>
+              </div>
               <div className="commandOutput"> 
                 {(command.type !== "txt") && command.cacheOutput}
               </div>
